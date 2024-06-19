@@ -7,6 +7,7 @@ build:
   jobs:
     pre_create_environment:
       - bash ./script/create_dev_conda_env.sh -c -s
+      - bash ./script/build-dgl.sh -c
 
 conda:
   environment: ./script/conda_env.yaml
