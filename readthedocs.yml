@@ -8,8 +8,8 @@ build:
   #   pre_create_environment:
   #     - bash ./script/create_dev_conda_env.sh -c -s
 
-conda:
-  environment: ./script/conda_env.yaml
+# conda:
+#   environment: ./script/conda_env.yaml
 
 sphinx:
   configuration: ./docs/source/conf.py
