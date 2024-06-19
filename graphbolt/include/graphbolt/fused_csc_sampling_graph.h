@@ -18,6 +18,7 @@ namespace graphbolt {
 namespace sampling {
 
 enum SamplerType { NEIGHBOR, LABOR, LABOR_DEPENDENT };
+enum TemporalOption { NOT_TEMPORAL, TEMPORAL };
 
 constexpr bool is_labor(SamplerType S) {
   return S == SamplerType::LABOR || S == SamplerType::LABOR_DEPENDENT;
@@ -252,6 +253,24 @@ class FusedCSCSamplingGraph : public torch::CustomClassHolder {
     edge_attributes_ = edge_attributes;
   }
 
+  /** @brief Add node attribute by name. */
+  inline void AddNodeAttribute(
+      const std::string& name, const torch::Tensor& node_attribute) {
+    if (!node_attributes_.has_value()) {
+      node_attributes_ = NodeAttrMap();
+    }
+    node_attributes_.value().insert_or_assign(name, node_attribute);
+  }
+
+  /** @brief Add edge attribute by name. */
+  inline void AddEdgeAttribute(
+      const std::string& name, const torch::Tensor& edge_attribute) {
+    if (!edge_attributes_.has_value()) {
+      edge_attributes_ = EdgeAttrMap();
+    }
+    edge_attributes_.value().insert_or_assign(name, edge_attribute);
+  }
+
   /**
    * @brief Magic number to indicate graph version in serialize/deserialize
    * stage.
@@ -322,8 +341,8 @@ class FusedCSCSamplingGraph : public torch::CustomClassHolder {
    * sampled edges, see arXiv:2210.13339.
    * @param return_eids Boolean indicating whether edge IDs need to be returned,
    * typically used when edge features are required.
-   * @param probs_name An optional string specifying the name of an edge
-   * attribute. This attribute tensor should contain (unnormalized)
+   * @param probs_or_mask An optional edge attribute tensor for probablities
+   * or masks. This attribute tensor should contain (unnormalized)
    * probabilities corresponding to each neighboring edge of a node. It must be
    * a 1D floating-point or boolean tensor, with the number of elements
    * equalling the total number of edges.
@@ -338,7 +357,7 @@ class FusedCSCSamplingGraph : public torch::CustomClassHolder {
       torch::optional<torch::Tensor> seeds,
       torch::optional<std::vector<int64_t>> seed_offsets,
       const std::vector<int64_t>& fanouts, bool replace, bool layer,
-      bool return_eids, torch::optional<std::string> probs_name,
+      bool return_eids, torch::optional<torch::Tensor> probs_or_mask,
       torch::optional<torch::Tensor> random_seed,
       double seed2_contribution) const;
 
@@ -361,8 +380,8 @@ class FusedCSCSamplingGraph : public torch::CustomClassHolder {
    * sampled edges, see arXiv:2210.13339.
    * @param return_eids Boolean indicating whether edge IDs need to be returned,
    * typically used when edge features are required.
-   * @param probs_name An optional string specifying the name of an edge
-   * attribute, following the same rules as in SampleNeighbors.
+   * @param probs_or_mask An optional edge attribute tensor for probablities
+   * or masks, following the same rules as in SampleNeighbors.
    * @param node_timestamp_attr_name An optional string specifying the name of
    * the node attribute that contains the timestamp of nodes in the graph.
    * @param edge_timestamp_attr_name An optional string specifying the name of
@@ -376,7 +395,7 @@ class FusedCSCSamplingGraph : public torch::CustomClassHolder {
       const torch::Tensor& input_nodes,
       const torch::Tensor& input_nodes_timestamp,
       const std::vector<int64_t>& fanouts, bool replace, bool layer,
-      bool return_eids, torch::optional<std::string> probs_name,
+      bool return_eids, torch::optional<torch::Tensor> probs_or_mask,
       torch::optional<std::string> node_timestamp_attr_name,
       torch::optional<std::string> edge_timestamp_attr_name) const;
 
@@ -413,10 +432,12 @@ class FusedCSCSamplingGraph : public torch::CustomClassHolder {
       SharedMemoryPtr tensor_metadata_shm, SharedMemoryPtr tensor_data_shm);
 
  private:
-  template <typename NumPickFn, typename PickFn>
+  template <TemporalOption Temporal, typename NumPickFn, typename PickFn>
   c10::intrusive_ptr<FusedSampledSubgraph> SampleNeighborsImpl(
-      const torch::Tensor& nodes, bool return_eids, NumPickFn num_pick_fn,
-      PickFn pick_fn) const;
+      const torch::Tensor& seeds,
+      torch::optional<std::vector<int64_t>>& seed_offsets,
+      const std::vector<int64_t>& fanouts, bool return_eids,
+      NumPickFn num_pick_fn, PickFn pick_fn) const;
 
   /** @brief CSC format index pointer array. */
   torch::Tensor indptr_;
@@ -498,13 +519,14 @@ class FusedCSCSamplingGraph : public torch::CustomClassHolder {
  * @param offset The starting edge ID for the connected neighbors of the given
  * node.
  * @param num_neighbors The number of neighbors of this node.
- *
- * @return The pick number of the given node.
+ * @param num_picked_ptr The pointer of the tensor which stores the pick
+ * numbers.
  */
-int64_t NumPick(
+template <typename PickedNumType>
+void NumPick(
     int64_t fanout, bool replace,
     const torch::optional<torch::Tensor>& probs_or_mask, int64_t offset,
-    int64_t num_neighbors);
+    int64_t num_neighbors, PickedNumType* num_picked_ptr);
 
 int64_t TemporalNumPick(
     torch::Tensor seed_timestamp, torch::Tensor csc_indics, int64_t fanout,
@@ -513,11 +535,13 @@ int64_t TemporalNumPick(
     const torch::optional<torch::Tensor>& edge_timestamp, int64_t seed_offset,
     int64_t offset, int64_t num_neighbors);
 
-int64_t NumPickByEtype(
-    const std::vector<int64_t>& fanouts, bool replace,
+template <typename PickedNumType>
+void NumPickByEtype(
+    bool with_seed_offsets, const std::vector<int64_t>& fanouts, bool replace,
     const torch::Tensor& type_per_edge,
     const torch::optional<torch::Tensor>& probs_or_mask, int64_t offset,
-    int64_t num_neighbors);
+    int64_t num_neighbors, PickedNumType* num_picked_ptr, int64_t seed_index,
+    const std::vector<int64_t>& etype_id_to_num_picked_offset);
 
 int64_t TemporalNumPickByEtype(
     torch::Tensor seed_timestamp, torch::Tensor csc_indices,
@@ -610,16 +634,24 @@ int64_t TemporalPick(
  * probabilities associated with each neighboring edge of a node in the original
  * graph. It must be a 1D floating-point tensor with the number of elements
  * equal to the number of edges in the graph.
- * @param picked_data_ptr The destination address where the picked neighbors
+ * @param picked_data_ptr The pointer of the tensor where the picked neighbors
  * should be put. Enough memory space should be allocated in advance.
+ * @param seed_offset The offset(index) of the seed among the group of seeds
+ * which share the same node type.
+ * @param subgraph_indptr_ptr The pointer of the tensor which stores the indptr
+ * of the sampled subgraph.
+ * @param etype_id_to_num_picked_offset A vector storing the mappings from each
+ * etype_id to the offset of its pick numbers in the tensor.
  */
 template <SamplerType S, typename PickedType>
 int64_t PickByEtype(
-    int64_t offset, int64_t num_neighbors, const std::vector<int64_t>& fanouts,
-    bool replace, const torch::TensorOptions& options,
-    const torch::Tensor& type_per_edge,
+    bool with_seed_offsets, int64_t offset, int64_t num_neighbors,
+    const std::vector<int64_t>& fanouts, bool replace,
+    const torch::TensorOptions& options, const torch::Tensor& type_per_edge,
     const torch::optional<torch::Tensor>& probs_or_mask, SamplerArgs<S> args,
-    PickedType* picked_data_ptr);
+    PickedType* picked_data_ptr, int64_t seed_offset,
+    PickedType* subgraph_indptr_ptr,
+    const std::vector<int64_t>& etype_id_to_num_picked_offset);
 
 template <typename PickedType>
 int64_t TemporalPickByEtype(
