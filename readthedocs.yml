@@ -6,6 +6,9 @@ build:
     python: "mambaforge-22.9"
   jobs:
     pre_create_environment:
+      - wget https://github.com/Kitware/CMake/releases/download/v3.29.2/cmake-3.29.2-linux-x86_64.tar.gz
+      - tar -zxvf cmake-3.29.2-linux-x86_64.tar.gz
+      - export PATH=cmake--3.29.2-linux-x86_64/bin:$PATH
       - bash ./script/create_dev_conda_env.sh -c -s
       - bash ./script/build_dgl.sh -c
 
