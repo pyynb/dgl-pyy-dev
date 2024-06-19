@@ -9,6 +9,7 @@ build:
       # - wget https://github.com/Kitware/CMake/releases/download/v3.29.2/cmake-3.29.2-linux-x86_64.tar.gz
       # - tar -zxvf cmake-3.29.2-linux-x86_64.tar.gz
       # - export PATH=cmake--3.29.2-linux-x86_64/bin:$PATH
+      - git submodule update --init --recursive
       - bash ./script/create_dev_conda_env.sh -c -s
     pre_install:
       - bash ./script/build_dgl.sh -c
