@@ -4,9 +4,9 @@ build:
   os: "ubuntu-22.04"
   tools:
     python: "3.10"
-  jobs:
-    pre_create_environment:
-      - bash ./script/create_dev_conda_env.sh -c -s
+  # jobs:
+  #   pre_create_environment:
+  #     - bash ./script/create_dev_conda_env.sh -c -s
 
 conda:
   environment: ./script/conda_env.yaml
