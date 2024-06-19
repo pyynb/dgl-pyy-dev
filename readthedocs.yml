@@ -1,9 +1,15 @@
+version: 2
+
 build:
-  image: latest
+  os: "ubuntu-22.04"
+  tools:
+    python: "3.10"
+  jobs:
+    pre_create_environment:
+      - bash ./script/create_dev_conda_env.sh -c -s
 
-formats: []
+conda:
+  environment: ./script/conda_env.yaml
 
-python:
-  version: 3.6
-  use_system_site_packages: true
-  setup_py_install: false
+sphinx:
+  configuration: ./docs/source/conf.py
