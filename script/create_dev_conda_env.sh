@@ -174,7 +174,7 @@ if [[ -z "${dry_run}" ]]; then
   if [[ -n "${force_create}" ]]; then
     conda_args="${conda_args} --force "
   fi
-  cp /tmp/${rand} /script/conda_env.yaml
+  cp ${yaml_path} /script/conda_env.yaml
 else
   echo "Running in dry mode, so creation of conda environment is skipped."
 fi
