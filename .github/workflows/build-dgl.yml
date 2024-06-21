@@ -27,6 +27,8 @@ jobs:
           environment-file: script/conda_env.yaml
       - name: check solution
         run: conda init
+      - name: restart shell
+        run: exec bash
           
           
       # - name: Create Conda Environment 
