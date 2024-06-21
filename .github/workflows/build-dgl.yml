@@ -36,4 +36,4 @@ jobs:
       # - name: Switch Conda Env
       #   run: conda activate dgl-dev-cpu
       - name: Build DGL
-        run: bash ./script/build_dgl.sh -c -r
+        run: DGL_HOME=/home/runner/work/dgl-pyy-dev/dgl-pyy-dev bash ./script/build_dgl.sh -c -r
