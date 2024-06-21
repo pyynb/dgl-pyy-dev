@@ -16,7 +16,9 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Create Conda Environment 
-        run: bash ./script/create_dev_conda_env.sh -c -n dgl-dev-cpu -s  
+        run: 
+          asdf global python mambaforge-22.9.0-3
+          bash ./script/create_dev_conda_env.sh -c -s
       - name: init conda env
         run: conda init bash
       - name: source bashrc
