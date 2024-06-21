@@ -32,3 +32,11 @@ jobs:
       #   run: conda activate dgl-cpu
       - name: Build DGL
         run: DGL_HOME=/home/runner/work/dgl-pyy-dev/dgl-pyy-dev bash ./script/build_dgl.sh -c -r
+      - name: Archive build artifacts
+        run: tar -czvf build.tar.gz build/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dgl-archive
+          path: dgl-archive.tar.gz
