@@ -14,7 +14,17 @@ jobs:
 
       - name: Pull Dependencies
         run: git submodule update --init --recursive
+        
+      - name: create environment with mamba
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          mamba-version: "*"
+          channels: conda-forge,bioconda,defaults
+          auto-activate-base: false
+          activate-environment: conda_env.yaml
+          environment-file: script/conda_env.yaml
 
+          
       - name: Create Conda Environment 
         run: bash ./script/create_dev_conda_env.sh -c -s
       - name: init conda env
