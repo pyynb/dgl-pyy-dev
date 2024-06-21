@@ -23,7 +23,7 @@ jobs:
           mamba-version: "*"
           channels: conda-forge,bioconda,defaults
           auto-activate-base: false
-          activate-environment: conda_env.yaml
+          activate-environment: dgl-cpu
           environment-file: script/conda_env.yaml
 
           
