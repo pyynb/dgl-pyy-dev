@@ -5,9 +5,7 @@ on: [push]
 jobs:
   build-dgl-latest:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
+
     steps:
       - name: Pull DGL
         uses: actions/checkout@v3
@@ -18,9 +16,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Create Conda Environment 
-        run: 
-          asdf global python mambaforge-22.9.0-3
-          bash ./script/create_dev_conda_env.sh -c -s
+        run: bash ./script/create_dev_conda_env.sh -c -s
       - name: init conda env
         run: conda init bash
       - name: source bashrc
