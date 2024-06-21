@@ -39,4 +39,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: dgl-archive
-          path: dgl-archive.tar.gz
+          path: /home/runner/work/dgl-pyy-dev/dgl-pyy-dev/dgl-archive.tar.gz
