@@ -26,8 +26,7 @@ jobs:
           activate-environment: dgl-cpu
           environment-file: script/conda_env.yaml
       - name: check solution
-        run: |
-          mamba env export
+        run: conda activate dgl-cpu
           
       # - name: Create Conda Environment 
       #   run: bash ./script/create_dev_conda_env.sh -c -s
