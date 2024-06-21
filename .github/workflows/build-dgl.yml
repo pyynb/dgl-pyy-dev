@@ -19,6 +19,8 @@ jobs:
         run: bash ./script/create_dev_conda_env.sh -c -n dgl-dev-cpu -s  
       - name: init conda env
         run: conda init bash
+      - name: source bashrc
+        run: source ~/.bashrc
       - name: Switch Conda Env
         run: conda activate dgl-dev-cpu
       - name: Build DGL
