@@ -50,7 +50,7 @@ dgl_option(EXTERNAL_GKLIB_PATH "Path to external gklib" OFF)
 dgl_feature_option(
     BUILD_SPARSE
     "Build DGL sparse library"
-    "all"
+    "false"
 )
 dgl_feature_option(
     BUILD_TORCH
@@ -76,7 +76,7 @@ dgl_feature_option(
 dgl_feature_option(
     BUILD_GRAPHBOLT
     "Build Graphbolt library"
-    "all"
+    "none"
 )
 
 dgl_feature_option(
