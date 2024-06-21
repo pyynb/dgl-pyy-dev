@@ -1,0 +1,14 @@
+name: build-dgl
+
+on: [pull_request]
+
+jobs:
+  build-dgl-latest:
+    - name: Pull DGL
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Pull Dependencies
+      run: git submodule update --init --recursive
+    - name: create conda env
+      run: bash ./script/create_dev_conda_env.sh -c -s
