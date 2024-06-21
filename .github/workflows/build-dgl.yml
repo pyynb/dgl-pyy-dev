@@ -25,6 +25,8 @@ jobs:
           auto-activate-base: false
           activate-environment: dgl-cpu
           environment-file: script/conda_env.yaml
+      - name: show conda env
+        run: conda env list
       - name: check solution
         run: conda init
       - name: restart shell
