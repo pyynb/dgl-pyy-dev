@@ -17,25 +17,16 @@ jobs:
 
       - name: Create Conda Environment 
         run: bash ./script/create_dev_conda_env.sh -c -s
-      - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@v3
         with:
-          activate-environment: anaconda-client-env
+          activate-environment: dgl-cpu
           environment-file: script/conda_env.yaml
           python-version: 3.10
           auto-activate-base: false
       - run: |
           conda info
           conda list
-          
-          
-      # - name: Create Conda Environment 
-      #   run: bash ./script/create_dev_conda_env.sh -c -s
-      - name: init conda env
-        run: conda activate dgl-cpu
-      # - name: source bashrc
-      #   run: source ~/.bashrc
-      # - name: Switch Conda Env
-      #   run: conda activate dgl-dev-cpu
+      # - name: init conda env
+      #   run: conda activate dgl-cpu
       - name: Build DGL
         run: DGL_HOME=/home/runner/work/dgl-pyy-dev/dgl-pyy-dev bash ./script/build_dgl.sh -c -r
