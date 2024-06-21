@@ -26,14 +26,13 @@ jobs:
           activate-environment: dgl-cpu
           environment-file: script/conda_env.yaml
       - name: check solution
-        run: 
-          conda init
-          conda activate dgl-cpu
+        run: conda init
+          
           
       # - name: Create Conda Environment 
       #   run: bash ./script/create_dev_conda_env.sh -c -s
-      # - name: init conda env
-      #   run: conda init bash
+      - name: init conda env
+        run: conda activate dgl-cpu
       # - name: source bashrc
       #   run: source ~/.bashrc
       # - name: Switch Conda Env
