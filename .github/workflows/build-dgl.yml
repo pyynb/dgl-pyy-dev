@@ -9,6 +9,7 @@ jobs:
       run:
         shell: bash -el {0}
     steps:
+    # pull
       - name: Pull DGL
         uses: actions/checkout@v3
         with:
@@ -17,6 +18,7 @@ jobs:
       - name: Pull Dependencies
         run: git submodule update --init --recursive
 
+    #create conda env
       - name: Create Conda Environment 
         run: bash ./script/create_dev_conda_env.sh -c -s
       - uses: conda-incubator/setup-miniconda@v3
@@ -30,11 +32,23 @@ jobs:
           conda list
       # - name: init conda env
       #   run: conda activate dgl-cpu
+
+    #build
       - name: Build DGL
         run: DGL_HOME=/home/runner/work/dgl-pyy-dev/dgl-pyy-dev bash ./script/build_dgl.sh -c -r
+
+
+    #archive
       - name: Archive build artifacts
         run: tar -czvf dgl-archive.tar.gz build/
-        
+
+
+    #git settings
+      - name: Setup Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
       - name: Checkout gh-pages branch
         run: |
           git fetch origin
