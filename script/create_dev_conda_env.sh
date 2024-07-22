@@ -162,11 +162,11 @@ echo "--------------------------------------------------"
 echo "Create a conda enviroment with the config?"
 [[ -n "${always_yes}" ]] || confirm
 
-# Save YAML file to specified path
-if [[ -n "${output_path}" ]]; then
-  cp ${yaml_path} ${output_path}
-  echo "Environment YAML file has been saved to ${output_path}."
-fi
+# # Save YAML file to specified path
+# if [[ -n "${output_path}" ]]; then
+#   cp ${yaml_path} ${output_path}
+#   echo "Environment YAML file has been saved to ${output_path}."
+# fi
 
 # Create conda environment.
 if [[ -z "${dry_run}" ]]; then
