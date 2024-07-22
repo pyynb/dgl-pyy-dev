@@ -157,6 +157,7 @@ sed -i "s|__DGL_HOME__|${PWD}|g" ${yaml_path}
 
 # Ask for final confirmation.
 echo "--------------------------------------------------"
+echo "dependencies are:"
 cat ${yaml_path}
 echo "--------------------------------------------------"
 echo "Create a conda enviroment with the config?"
